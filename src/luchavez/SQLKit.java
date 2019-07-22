@@ -31,6 +31,13 @@ abstract class SQLKit {
 	public PreparedStatement getPST(String sql) {
 		return getPST(sql, null);
 	}
+	
+	public void testConnection() {
+		if(openDatabase()) {
+			System.out.println("Connected successfully.");
+		}
+		closeDatabase();
+	}
 
 	/**
 	 * Returns PreparedStatement (binder required)
@@ -255,7 +262,7 @@ abstract class SQLKit {
 //		}
 //	}
 	
-	abstract void openDatabase();
+	abstract boolean openDatabase();
 	
 	protected void closeDatabase() {
 		try {
