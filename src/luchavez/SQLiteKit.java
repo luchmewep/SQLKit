@@ -16,6 +16,12 @@ public class SQLiteKit extends SQLKit {
 		this.db_url = db_url;
 	}
 	
+	/*	OPEN and CLOSE DATABASE CONNECTIONS
+	 * 	Note: Before opening new connections,
+	 * 	all previous connections must be closed.
+	 * 	This is to prevent the database from being locked.
+	 */
+	
 	@Override
 	boolean openDatabase() {
 		closeDatabase();
@@ -25,7 +31,6 @@ public class SQLiteKit extends SQLKit {
 		} catch (SQLException e) {
 			System.err.println("Error @openDatabase: "+e);
 			return false;
-		}		
+		}
 	}
-	
 }

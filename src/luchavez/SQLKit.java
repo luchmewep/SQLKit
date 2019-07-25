@@ -6,47 +6,54 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 abstract class SQLKit {
 	protected Connection con;
 	private PreparedStatement pst;
 	private ResultSetMetaData rsmd;
 	@SuppressWarnings("rawtypes")
-	private Vector tblHeader, columnData, rowData;
+	private ArrayList tblHeader, columnData, rowData;
 	@SuppressWarnings("rawtypes")
-	private Vector<Vector> tblRows;
+	private ArrayList<ArrayList> tblRows;
 
+	public void testConnection() {
+		if(openDatabase()) {
+			System.out.println("Connected successfully.");
+		}
+	}
+	
 	/**
 	 * Returns PreparedStament (does not require binder)
 	 * @param sql (String)
 	 * @return PreparedStatement
 	 */
-	public PreparedStatement getPST(String sql) {
+	private PreparedStatement getPST(String sql) {
 		return getPST(sql, null);
-	}
-	
-	public void testConnection() {
-		if(openDatabase()) {
-			System.out.println("Connected successfully.");
-		}
-		closeDatabase();
 	}
 
 	/**
 	 * Returns PreparedStatement (binder required)
 	 * @param sql (String)
-	 * @param binder (Object-type Vector)
+	 * @param binder (Object-type ArrayList)
 	 * @return PreparedStatement
 	 */
 	@SuppressWarnings("rawtypes")
-	public PreparedStatement getPST(String sql, Vector binder) {
+	private PreparedStatement getPST(String sql, ArrayList binder) {
+		if(sql == null) {
+			System.err.println("Error @getPST: No SQL command.");
+			return null;
+		}
 		openDatabase();
 		try {
 			pst = con.prepareStatement(sql);
@@ -58,7 +65,6 @@ abstract class SQLKit {
 			return pst;
 		} catch (Exception e) {
 			System.err.println("Error @getPST: "+e.getMessage());
-			closeDatabase();
 			return null;
 		}
 	}
@@ -68,15 +74,18 @@ abstract class SQLKit {
 	 * @param pst
 	 * @return boolean
 	 */
-	public boolean executePST(PreparedStatement pst) {
+	private boolean executePST(PreparedStatement pst) {
+		if(pst == null) {
+			System.err.println("Error @executePST: No prepared statement.");
+			return false;
+		}
 		try {
-			if(pst.executeUpdate() == 1) {
+			if(pst != null && pst.executeUpdate() > 0) {
 				return true;
 			}
 			else return false;
 		} catch (Exception e) {
 			System.err.println("Error @executePST: "+e.getMessage());
-			closeDatabase();
 			return false;
 		}
 	}
@@ -86,25 +95,46 @@ abstract class SQLKit {
 	 * @param pst (PreparedStatement)
 	 * @return ResultSet
 	 */
-	public ResultSet getRS(PreparedStatement pst) {
+	private ResultSet getRS(PreparedStatement pst) {
+		if(pst == null) {
+			System.err.println("Error @getRS: No prepared statement.");
+			return null;
+		}
 		try {
 			return pst.executeQuery();
 		} catch (Exception e) {
 			System.err.println("Error @getRS: "+e.getMessage());
-			closeDatabase();
 			return null;
 		}
+	}
+	
+	public boolean runQuery(String sql) {
+		return executePST(getPST(sql));
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public boolean runQuery(String sql, ArrayList binder) {
+		return false;
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public boolean runQuery(String sql, Object[] binder) {
+		return runQuery(sql, new ArrayList(Arrays.asList(binder)));
 	}
 
 	/**
 	 * Returns one row from the ResultSet
 	 * @param rs (ResultSet)
-	 * @return Vector (Object-type)
+	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Vector getRow(ResultSet rs) {
+	public ArrayList getRow(ResultSet rs) {
+		if(rs == null) {
+			System.err.println("Error @getRow: No result set.");
+			return null;
+		}
 		try {
-			rowData = new Vector<>();
+			rowData = new ArrayList<>();
 			int columns = rs.getMetaData().getColumnCount();
 			while(rs.next()) {
 				for (int i = 1; i <= columns; i++) {
@@ -115,28 +145,35 @@ abstract class SQLKit {
 			return rowData;
 		} catch (Exception e) {
 			System.err.println("Error @getRow: "+e.getMessage());
-			closeDatabase();
 			return null;
 		}
 	}
 
+	public ArrayList getColumn(String sql) {
+		
+		return null;
+	}
+	
 	/**
 	 * Returns one column from the ResultSet
 	 * @param rs (ResultSet)
 	 * @param columnName (String)
-	 * @return Vector (Object-type)
+	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" } )
-	public Vector getColumn(ResultSet rs, String columnName) {
+	public ArrayList getColumn(ResultSet rs, String columnName) {
+		if(rs == null) {
+			System.err.println("Error @getColumn: No result set.");
+			return null;
+		}
 		try {
-			columnData = new Vector<>();
+			columnData = new ArrayList<>();
 			while(rs.next()) {
 				columnData.add(rs.getObject(columnName));
 			}
 			return columnData;
 		} catch (Exception e) {
 			System.err.println("Error @getColumn: "+e.getMessage());
-			closeDatabase();
 			return null;
 		}
 	}
@@ -144,12 +181,12 @@ abstract class SQLKit {
 	/**
 	 * Returns column names from the ResultSet
 	 * @param rs (ResultSet)
-	 * @return Vector (Object-type)
+	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Vector getColumnNames(ResultSet rs){
+	public ArrayList getColumnNames(ResultSet rs){
 		try {
-			tblHeader = new Vector<>();
+			tblHeader = new ArrayList<>();
 			rsmd = rs.getMetaData();
 			int columns = rsmd.getColumnCount();
 			for (int i = 1; i <= columns; i++) {
@@ -158,7 +195,6 @@ abstract class SQLKit {
 			return tblHeader;
 		} catch (Exception e) {
 			System.err.println("Error @getColumnNames: "+e.getMessage());
-			closeDatabase();
 			return null;
 		}
 	}
@@ -166,12 +202,12 @@ abstract class SQLKit {
 	/**
 	 * Returns column labels from the ResultSet
 	 * @param rs (ResultSet)
-	 * @return Vector (Object-type)
+	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Vector getColumnLabels(ResultSet rs){
+	public ArrayList getColumnLabels(ResultSet rs){
 		try {
-			tblHeader = new Vector<>();
+			tblHeader = new ArrayList<>();
 			rsmd = rs.getMetaData();
 			int columns = rsmd.getColumnCount();
 			for (int i = 1; i <= columns; i++) {
@@ -180,7 +216,6 @@ abstract class SQLKit {
 			return tblHeader;
 		} catch (Exception e) {
 			System.err.println("Error @getColumnLabels: "+e.getMessage());
-			closeDatabase();
 			return null;
 		}
 	}
@@ -188,16 +223,16 @@ abstract class SQLKit {
 	/**
 	 * Returns all rows from the ResultSet
 	 * @param rs (ResultSet)
-	 * @return 2D Vector (Object-type)
+	 * @return 2D ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Vector<Vector> getRows(ResultSet rs){
+	public ArrayList<ArrayList> getRows(ResultSet rs){
 		try {
-			tblRows = new Vector<>();
+			tblRows = new ArrayList<>();
 			int columns = rs.getMetaData().getColumnCount();
 			int row = 0;
 			while (rs.next()) {
-				tblRows.add(new Vector<>());
+				tblRows.add(new ArrayList<>());
 				for (int i = 1; i <= columns; i++) {
 					tblRows.get(row).add(rs.getObject(i));
 				}
@@ -206,7 +241,6 @@ abstract class SQLKit {
 			return tblRows;
 		} catch (Exception e) {
 			System.err.println("Error @getRows: "+e.getMessage());
-			closeDatabase();
 			return null;
 		}
 	}
@@ -217,26 +251,22 @@ abstract class SQLKit {
 	 * @return DefaultTableModel for JTable
 	 */
 	public DefaultTableModel getTableModel(ResultSet rs) {
-		//Instantiate Vectors
-		tblHeader = new Vector<>();
-		tblRows = new Vector<>();
-
 		//Get Column Names
 		tblHeader = getColumnLabels(rs);
 
 		//Get Rows from Result Set
 		tblRows = getRows(rs);
 
-		return new DefaultTableModel(tblRows, tblHeader);
+		return new DefaultTableModel(arrayListToArray(input, output);, tblHeader);
 	}
 
 	/**
-	 * Returns JComboBox model from an Object-type Vector
-	 * @param v (Object-type Vector)
+	 * Returns JComboBox model from an Object-type ArrayList
+	 * @param v (Object-type ArrayList)
 	 * @return
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DefaultComboBoxModel getComboBoxModel(Vector v) {
+	public DefaultComboBoxModel getComboBoxModel(ArrayList v) {
 		return new DefaultComboBoxModel<>(v);
 	}
 	
@@ -253,14 +283,6 @@ abstract class SQLKit {
 	 * 	all previous connections must be closed.
 	 * 	This is to prevent the database from being locked.
 	 */
-//	private void openDatabase() {
-//		closeDatabase();
-//		try {
-//			con = DriverManager.getConnection();
-//		} catch (SQLException e) {
-//			System.err.println("Error @openDatabase: "+e);
-//		}
-//	}
 	
 	abstract boolean openDatabase();
 	
@@ -270,7 +292,37 @@ abstract class SQLKit {
 				con.close();
 			}
 		} catch (SQLException e) {
-			System.err.println("Error @closeDatabase: "+e);
+			System.err.println("Error @closeDatabase: "+e.getMessage());
+		}
+	}
+	
+	/*
+	 * STATIC METHODS (Converters, etc.)
+	 */
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static Object[] arrayListToArray(ArrayList input) {
+		return input.toArray(new Object[input.size()]);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static void arrayListToArray(ArrayList input, Object[] output) {
+		output = arrayListToArray(input);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static Object[][] arrayListToArray2(ArrayList<ArrayList> input) {
+		output = new Object[input.size()][];
+		for (int i = 0; i < input.size(); i++) {
+			output[i] = input.get(i).toArray(new Object[input.get(i).size()]);
+		}
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static void arrayListToArray(ArrayList<ArrayList> input, Object[][] output) {
+		output = new Object[input.size()][];
+		for (int i = 0; i < input.size(); i++) {
+			output[i] = input.get(i).toArray(new Object[input.get(i).size()]);
 		}
 	}
 }

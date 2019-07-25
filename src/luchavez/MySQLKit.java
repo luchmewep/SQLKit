@@ -52,6 +52,12 @@ public class MySQLKit extends SQLKit {
 		this.db_password = "";
 	}
 	
+	/*	OPEN and CLOSE DATABASE CONNECTIONS
+	 * 	Note: Before opening new connections,
+	 * 	all previous connections must be closed.
+	 * 	This is to prevent the database from being locked.
+	 */
+	
 	@Override
 	boolean openDatabase() {
 		closeDatabase();
