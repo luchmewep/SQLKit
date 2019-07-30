@@ -250,15 +250,15 @@ abstract class SQLKit {
 	 * @param rs (ResultSet)
 	 * @return DefaultTableModel for JTable
 	 */
-	public DefaultTableModel getTableModel(ResultSet rs) {
-		//Get Column Names
-		tblHeader = getColumnLabels(rs);
-
-		//Get Rows from Result Set
-		tblRows = getRows(rs);
-
-		return new DefaultTableModel(getArrayListToArray(tblRows), );
-	}
+//	public DefaultTableModel getTableModel(ResultSet rs) {
+//		//Get Column Names
+//		tblHeader = getColumnLabels(rs);
+//
+//		//Get Rows from Result Set
+//		tblRows = getRows(rs);
+//
+//		return new DefaultTableModel(getArrayListToArray(tblRows), );
+//	}
 
 	/**
 	 * Returns JComboBox model from an Object-type ArrayList
@@ -270,9 +270,9 @@ abstract class SQLKit {
 //		return new DefaultComboBoxModel<>(v);
 //	}
 	
-	public void setTableModel(JTable tbl, String sql) {
-		tbl.setModel(getTableModel(getRS(getPST(sql))));
-	}
+//	public void setTableModel(JTable tbl, String sql) {
+//		tbl.setModel(getTableModel(getRS(getPST(sql))));
+//	}
 	
 //	public void setComboBoxModel(JComboBox cmb, String col_name, String sql) {
 //		cmb.setModel(getComboBoxModel(getColumn(getRS(getPST(sql)), col_name)));
@@ -319,11 +319,11 @@ abstract class SQLKit {
 //		output = arrayListToArray(input);
 //	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static void arrayListToArray(ArrayList<ArrayList> input, Object[][] output) {
-		output = new Object[input.size()][];
-		for (int i = 0; i < input.size(); i++) {
-			output[i] = input.get(i).toArray(new Object[input.get(i).size()]);
-		}
-	}
+//	@SuppressWarnings({ "unchecked", "rawtypes" })
+//	public static void arrayListToArray(ArrayList<ArrayList> input, Object[][] output) {
+//		output = new Object[input.size()][];
+//		for (int i = 0; i < input.size(); i++) {
+//			output[i] = input.get(i).toArray(new Object[input.get(i).size()]);
+//		}
+//	}
 }
