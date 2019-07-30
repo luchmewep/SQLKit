@@ -257,7 +257,7 @@ abstract class SQLKit {
 		//Get Rows from Result Set
 		tblRows = getRows(rs);
 
-		return new DefaultTableModel(arrayListToArray(input, output);, tblHeader);
+		return new DefaultTableModel(getArrayListToArray(tblRows), );
 	}
 
 	/**
@@ -265,18 +265,18 @@ abstract class SQLKit {
 	 * @param v (Object-type ArrayList)
 	 * @return
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public DefaultComboBoxModel getComboBoxModel(ArrayList v) {
-		return new DefaultComboBoxModel<>(v);
-	}
+//	@SuppressWarnings({ "rawtypes", "unchecked" })
+//	public DefaultComboBoxModel getComboBoxModel(ArrayList v) {
+//		return new DefaultComboBoxModel<>(v);
+//	}
 	
 	public void setTableModel(JTable tbl, String sql) {
 		tbl.setModel(getTableModel(getRS(getPST(sql))));
 	}
 	
-	public void setComboBoxModel(JComboBox cmb, String col_name, String sql) {
-		cmb.setModel(getComboBoxModel(getColumn(getRS(getPST(sql)), col_name)));
-	}
+//	public void setComboBoxModel(JComboBox cmb, String col_name, String sql) {
+//		cmb.setModel(getComboBoxModel(getColumn(getRS(getPST(sql)), col_name)));
+//	}
 	
 	/*	OPEN and CLOSE DATABASE CONNECTIONS
 	 * 	Note: Before opening new connections,
@@ -300,23 +300,24 @@ abstract class SQLKit {
 	 * STATIC METHODS (Converters, etc.)
 	 */
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Object[] arrayListToArray(ArrayList input) {
-		return input.toArray(new Object[input.size()]);
-	}
+//	@SuppressWarnings({ "rawtypes", "unchecked" })
+//	public static Object[] getArrayListToArray(ArrayList input) {
+//		if(input == null) {
+//			return null;
+//		}
+//		//Check if 1D or 2D
+//		else return input.toArray(new Object[input.size()]);
+//		Object output[][] = new Object[input.size()][];
+//		for (int i = 0; i < input.size(); i++) {
+//			output[i] = input.get(i).toArray(new Object[input.get(i).size()]);
+//		}
+//		return output;
+//	}
 	
-	@SuppressWarnings("rawtypes")
-	public static void arrayListToArray(ArrayList input, Object[] output) {
-		output = arrayListToArray(input);
-	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Object[][] arrayListToArray2(ArrayList<ArrayList> input) {
-		output = new Object[input.size()][];
-		for (int i = 0; i < input.size(); i++) {
-			output[i] = input.get(i).toArray(new Object[input.get(i).size()]);
-		}
-	}
+//	@SuppressWarnings("rawtypes")
+//	public static void arrayListToArray(ArrayList input, Object[] output) {
+//		output = arrayListToArray(input);
+//	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void arrayListToArray(ArrayList<ArrayList> input, Object[][] output) {

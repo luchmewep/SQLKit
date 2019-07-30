@@ -154,19 +154,18 @@ public class sqlitecruddemo {
 		/*
 		 * Get Table Model for JTable from Result Set
 		 */
-//		db.testConnection();
-//		sql = "select * from stud_info";
-//		model = db.getTableModel(rs);
-//		JTable t = new JTable();
-//		t.setModel(model);
-//		JScrollPane s = new JScrollPane(t);
-//		s.setBounds(0, 0, 500, 500);
-//		
-//		JFrame f = new JFrame();
-//		f.setLayout(null);
-//		f.add(s);
-//		f.setVisible(true);
-//		f.setSize(500, 500);
-//		f.setLocationRelativeTo(null);
+		db.testConnection();
+		sql = "select * from stud_info";
+		JTable t = new JTable();
+		
+		JScrollPane s = new JScrollPane(t);
+		s.setBounds(0, 0, 500, 500);
+		
+		JFrame f = new JFrame();
+		f.setLayout(null);
+		f.add(s);
+		f.setVisible(true);
+		f.setSize(500, 500);
+		f.setLocationRelativeTo(null);
 	}
 }
