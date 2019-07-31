@@ -76,7 +76,7 @@ public class MySQLKit extends SQLKit {
 	protected void connectionTest() {
 		if(connectionOpen()) {
 			System.out.println("Connected successfully.");
-			ArrayList tables = getColumn("show tables");
+			ArrayList tables = getOneColumn("show tables");
 			if(tables != null) {
 				String message = "The database contains "+tables.size()+" tables.";
 				if(tables.size() != 0) {

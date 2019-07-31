@@ -143,9 +143,9 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private ArrayList getRow(ResultSet rs) {
+	private ArrayList getOneRow(ResultSet rs) {
 		if(rs == null) {
-			System.err.println("Error @getRow: No result set.");
+			System.err.println("Error @getOneRow: No result set.");
 			return null;
 		}
 		try {
@@ -164,7 +164,7 @@ abstract class SQLKit {
 				return rowData;
 			}
 		} catch (Exception e) {
-			System.err.println("Error @getRow: "+e.getMessage());
+			System.err.println("Error @getOneRow: "+e.getMessage());
 			return null;
 		}
 	}
@@ -176,8 +176,8 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings("rawtypes")
-	public ArrayList getRow(String sql, ArrayList binder) {
-		return getRow(getRS(getPST(sql, binder)));
+	public ArrayList getOneRow(String sql, ArrayList binder) {
+		return getOneRow(getRS(getPST(sql, binder)));
 	}
 	
 	/**
@@ -187,8 +187,8 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings("rawtypes")
-	public ArrayList getRow(String sql, Object[] binder) {
-		return getRow(getRS(getPST(sql, binder)));
+	public ArrayList getOneRow(String sql, Object[] binder) {
+		return getOneRow(getRS(getPST(sql, binder)));
 	}
 	
 	/**
@@ -197,8 +197,8 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings("rawtypes")
-	public ArrayList getRow(String sql) {
-		return getRow(getRS(getPST(sql)));
+	public ArrayList getOneRow(String sql) {
+		return getOneRow(getRS(getPST(sql)));
 	}
 	
 	/**
@@ -208,9 +208,9 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" } )
-	private ArrayList getColumn(ResultSet rs, String columnName) {
+	private ArrayList getOneColumn(ResultSet rs, String columnName) {
 		if(rs == null) {
-			System.err.println("Error @getColumn: No result set.");
+			System.err.println("Error @getOneColumn: No result set.");
 			return null;
 		}
 		try {
@@ -224,7 +224,7 @@ abstract class SQLKit {
 			}
 			return columnData;
 		} catch (Exception e) {
-			System.err.println("Error @getColumn: "+e.getMessage());
+			System.err.println("Error @getOneColumn: "+e.getMessage());
 			return null;
 		}
 	}
@@ -237,8 +237,8 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings("rawtypes")
-	public ArrayList getColumn(String sql, ArrayList binder, String columnName) {
-		return getColumn(getRS(getPST(sql, binder)), columnName);
+	public ArrayList getOneColumn(String sql, ArrayList binder, String columnName) {
+		return getOneColumn(getRS(getPST(sql, binder)), columnName);
 	}
 	
 	/**
@@ -249,8 +249,8 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings("rawtypes")
-	public ArrayList getColumn(String sql, Object[] binder, String columnName) {
-		return getColumn(getRS(getPST(sql, binder)), columnName);
+	public ArrayList getOneColumn(String sql, Object[] binder, String columnName) {
+		return getOneColumn(getRS(getPST(sql, binder)), columnName);
 	}
 	
 	/**
@@ -260,8 +260,8 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings("rawtypes")
-	public ArrayList getColumn(String sql, ArrayList binder) {
-		return getColumn(getRS(getPST(sql, binder)), null);
+	public ArrayList getOneColumn(String sql, ArrayList binder) {
+		return getOneColumn(getRS(getPST(sql, binder)), null);
 	}
 
 	/**
@@ -271,8 +271,8 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings("rawtypes")
-	public ArrayList getColumn(String sql, Object[] binder) {
-		return getColumn(getRS(getPST(sql, binder)), null);
+	public ArrayList getOneColumn(String sql, Object[] binder) {
+		return getOneColumn(getRS(getPST(sql, binder)), null);
 	}
 
 	/**
@@ -282,8 +282,8 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings("rawtypes")
-	public ArrayList getColumn(String sql, String columnName) {
-		return getColumn(getRS(getPST(sql)), columnName);
+	public ArrayList getOneColumn(String sql, String columnName) {
+		return getOneColumn(getRS(getPST(sql)), columnName);
 	}
 	
 	/**
@@ -292,8 +292,8 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings("rawtypes")
-	public ArrayList getColumn(String sql) {
-		return getColumn(getRS(getPST(sql)), null);
+	public ArrayList getOneColumn(String sql) {
+		return getOneColumn(getRS(getPST(sql)), null);
 	}
 
 	/**
@@ -416,9 +416,9 @@ abstract class SQLKit {
 	 * @return 2D ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private ArrayList<ArrayList> getRows(ResultSet rs){
+	private ArrayList<ArrayList> getAllRows(ResultSet rs){
 		if(rs == null) {
-			System.err.println("Error @getRows: No result set.");
+			System.err.println("Error @getAllRows: No result set.");
 			return null;
 		}
 		try {
@@ -434,7 +434,7 @@ abstract class SQLKit {
 			}
 			return tblRows;
 		} catch (Exception e) {
-			System.err.println("Error @getRows: "+e.getMessage());
+			System.err.println("Error @getAllRows: "+e.getMessage());
 			return null;
 		}
 	}
@@ -446,8 +446,8 @@ abstract class SQLKit {
 	 * @return 2D ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public ArrayList<ArrayList> getRows(String sql, ArrayList binder){
-		return getRows(getRS(getPST(sql, binder)));
+	public ArrayList<ArrayList> getAllRows(String sql, ArrayList binder){
+		return getAllRows(getRS(getPST(sql, binder)));
 	}
 	
 	/**
@@ -457,8 +457,8 @@ abstract class SQLKit {
 	 * @return 2D ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public ArrayList<ArrayList> getRows(String sql, Object[] binder){
-		return getRows(getRS(getPST(sql, binder)));
+	public ArrayList<ArrayList> getAllRows(String sql, Object[] binder){
+		return getAllRows(getRS(getPST(sql, binder)));
 	}
 	
 	/**
@@ -467,8 +467,8 @@ abstract class SQLKit {
 	 * @return 2D ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "rawtypes" })
-	public ArrayList<ArrayList> getRows(String sql){
-		return getRows(getRS(getPST(sql)));
+	public ArrayList<ArrayList> getAllRows(String sql){
+		return getAllRows(getRS(getPST(sql)));
 	}
 
 	/**************************************************/
@@ -489,7 +489,7 @@ abstract class SQLKit {
 		tblHeader = getColumnLabels(rs);
 
 		//Get Rows from Result Set
-		tblRows = getRows(rs);
+		tblRows = getAllRows(rs);
 
 		return new DefaultTableModel((Object[][]) arrayListToArray(tblRows), (Object[]) arrayListToArray(tblHeader));
 	}
@@ -526,7 +526,7 @@ abstract class SQLKit {
 
 	/**
 	 * Returns JComboBox model from an Object-type ArrayList
-	 * Best to combine with getRow, getColumn, getColumnNames and getColumnLabels
+	 * Best to combine with getOneRow, getOneColumn, getColumnNames and getColumnLabels
 	 * @param arr (Object-type ArrayList)
 	 * @return DefaultComboBoxModel for JComboBox
 	 */
@@ -537,7 +537,7 @@ abstract class SQLKit {
 	
 	/**
 	 * Returns JComboBox model from an Object-type ArrayList
-	 * Best to combine with getRow, getColumn, getColumnNames and getColumnLabels
+	 * Best to combine with getOneRow, getOneColumn, getColumnNames and getColumnLabels
 	 * @param arr (Object-type array)
 	 * @return DefaultComboBoxModel for JComboBox
 	 */
@@ -591,7 +591,7 @@ abstract class SQLKit {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setComboBoxModel(JComboBox cmb, String sql, ArrayList binder, String columnName) {
-		cmb.setModel(getComboBoxModel(getColumn(sql, binder, columnName)));
+		cmb.setModel(getComboBoxModel(getOneColumn(sql, binder, columnName)));
 	}
 	
 	/**
@@ -603,7 +603,7 @@ abstract class SQLKit {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setComboBoxModel(JComboBox cmb, String sql, Object[] binder, String columnName) {
-		cmb.setModel(getComboBoxModel(getColumn(sql, binder, columnName)));
+		cmb.setModel(getComboBoxModel(getOneColumn(sql, binder, columnName)));
 	}
 	
 	/**
@@ -614,7 +614,7 @@ abstract class SQLKit {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setComboBoxModel(JComboBox cmb, String sql, ArrayList binder) {
-		cmb.setModel(getComboBoxModel(getColumn(sql, binder)));
+		cmb.setModel(getComboBoxModel(getOneColumn(sql, binder)));
 	}
 	
 	/**
@@ -625,7 +625,7 @@ abstract class SQLKit {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setComboBoxModel(JComboBox cmb, String sql, Object[] binder) {
-		cmb.setModel(getComboBoxModel(getColumn(sql, binder)));
+		cmb.setModel(getComboBoxModel(getOneColumn(sql, binder)));
 	}
 	
 	/**
@@ -636,7 +636,7 @@ abstract class SQLKit {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setComboBoxModel(JComboBox cmb, String sql, String columnName) {
-		cmb.setModel(getComboBoxModel(getColumn(sql, columnName)));
+		cmb.setModel(getComboBoxModel(getOneColumn(sql, columnName)));
 	}
 	
 	/**
@@ -646,7 +646,7 @@ abstract class SQLKit {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void setComboBoxModel(JComboBox cmb, String sql) {
-		cmb.setModel(getComboBoxModel(getColumn(sql)));
+		cmb.setModel(getComboBoxModel(getOneColumn(sql)));
 	}
 	
 	/*	OPEN and CLOSE DATABASE CONNECTIONS

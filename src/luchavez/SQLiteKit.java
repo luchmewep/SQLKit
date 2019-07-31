@@ -40,7 +40,7 @@ public class SQLiteKit extends SQLKit {
 	protected void connectionTest() {
 		if(connectionOpen()) {
 			System.out.println("Connected successfully.");
-			ArrayList tables = getColumn("SELECT name FROM sqlite_master WHERE type='table'");
+			ArrayList tables = getOneColumn("SELECT name FROM sqlite_master WHERE type='table'");
 			if(tables != null) {
 				String message = "The database contains "+tables.size()+" tables.";
 				if(tables.size() != 0) {
