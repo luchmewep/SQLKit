@@ -2,6 +2,7 @@ package luchavez;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class SQLiteKit extends SQLKit {
 
@@ -23,14 +24,32 @@ public class SQLiteKit extends SQLKit {
 	 */
 	
 	@Override
-	boolean openDatabase() {
-		closeDatabase();
+	protected boolean connectionOpen() {
+		connectionClose();
 		try {
 			con = DriverManager.getConnection("jdbc:sqlite:"+db_url);
 			return true;
 		} catch (SQLException e) {
-			System.err.println("Error @openDatabase: "+e);
+			System.err.println("Error @connectionOpen: "+e);
 			return false;
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	protected void connectionTest() {
+		if(connectionOpen()) {
+			System.out.println("Connected successfully.");
+			ArrayList tables = getColumn("SELECT name FROM sqlite_master WHERE type='table'");
+			if(tables != null) {
+				String message = "The database contains "+tables.size()+" tables.";
+				if(tables.size() != 0) {
+					for (Object object : tables) {
+						message += "\n> "+object;
+					}
+				}
+				System.out.println(message);
+			}
 		}
 	}
 }

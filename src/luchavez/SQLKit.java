@@ -1,22 +1,16 @@
 package luchavez;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 abstract class SQLKit {
 	protected Connection con;
@@ -26,10 +20,30 @@ abstract class SQLKit {
 	private ArrayList tblHeader, columnData, rowData;
 	@SuppressWarnings("rawtypes")
 	private ArrayList<ArrayList> tblRows;
-
-	public void testConnection() {
-		if(openDatabase()) {
-			System.out.println("Connected successfully.");
+	
+	/**
+	 * Returns PreparedStatement (binder required)
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 * @return PreparedStatement
+	 */
+	private PreparedStatement getPST(String sql, Object[] binder) {
+		if(sql == null) {
+			System.err.println("Error @getPST: No SQL command.");
+			return null;
+		}
+		connectionOpen();
+		try {
+			pst = con.prepareStatement(sql);
+			if(binder != null) {
+				for (int i = 0; i < binder.length; i++) {
+					pst.setObject(i+1, binder[i]);
+				}
+			}
+			return pst;
+		} catch (Exception e) {
+			System.err.println("Error @getPST: "+e.getMessage());
+			return null;
 		}
 	}
 	
@@ -39,7 +53,7 @@ abstract class SQLKit {
 	 * @return PreparedStatement
 	 */
 	private PreparedStatement getPST(String sql) {
-		return getPST(sql, null);
+		return getPST(sql, arrayListToArray(null));
 	}
 
 	/**
@@ -50,23 +64,7 @@ abstract class SQLKit {
 	 */
 	@SuppressWarnings("rawtypes")
 	private PreparedStatement getPST(String sql, ArrayList binder) {
-		if(sql == null) {
-			System.err.println("Error @getPST: No SQL command.");
-			return null;
-		}
-		openDatabase();
-		try {
-			pst = con.prepareStatement(sql);
-			if(binder != null) {
-				for (int i = 0; i < binder.size(); i++) {
-					pst.setObject(i+1, binder.get(i));
-				}
-			}
-			return pst;
-		} catch (Exception e) {
-			System.err.println("Error @getPST: "+e.getMessage());
-			return null;
-		}
+		return getPST(sql, arrayListToArray(binder));
 	}
 
 	/**
@@ -91,6 +89,37 @@ abstract class SQLKit {
 	}
 	
 	/**
+	 * Returns true or false for Create, Update, Delete Queries
+	 * @param sql (String)
+	 * @param binder (Object-type ArrayList)
+	 * @return boolean
+	 */
+	@SuppressWarnings("rawtypes")
+	public boolean runQuery(String sql, ArrayList binder) {
+		return executePST(getPST(sql, binder));
+	}
+	
+	/**
+	 * Returns true or false for Create, Update, Delete Queries
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 * @return boolean
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public boolean runQuery(String sql, Object[] binder) {
+		return runQuery(sql, new ArrayList(Arrays.asList(binder)));
+	}
+	
+	/**
+	 * Returns true or false for Create, Update, Delete Queries
+	 * @param sql (String)
+	 * @return boolean
+	 */
+	public boolean runQuery(String sql) {
+		return executePST(getPST(sql));
+	}
+
+	/**
 	 * Returns ResultSet from PreparedStatement
 	 * @param pst (PreparedStatement)
 	 * @return ResultSet
@@ -108,27 +137,13 @@ abstract class SQLKit {
 		}
 	}
 	
-	public boolean runQuery(String sql) {
-		return executePST(getPST(sql));
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public boolean runQuery(String sql, ArrayList binder) {
-		return false;
-	}
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public boolean runQuery(String sql, Object[] binder) {
-		return runQuery(sql, new ArrayList(Arrays.asList(binder)));
-	}
-
 	/**
 	 * Returns one row from the ResultSet
 	 * @param rs (ResultSet)
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public ArrayList getRow(ResultSet rs) {
+	private ArrayList getRow(ResultSet rs) {
 		if(rs == null) {
 			System.err.println("Error @getRow: No result set.");
 			return null;
@@ -142,16 +157,48 @@ abstract class SQLKit {
 				}
 				break;
 			}
-			return rowData;
+			if(rowData.size() == 0) {
+				return null;
+			}
+			else {
+				return rowData;
+			}
 		} catch (Exception e) {
 			System.err.println("Error @getRow: "+e.getMessage());
 			return null;
 		}
 	}
-
-	public ArrayList getColumn(String sql) {
-		
-		return null;
+	
+	/**
+	 * Returns one column from the ResultSet
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getRow(String sql, ArrayList binder) {
+		return getRow(getRS(getPST(sql, binder)));
+	}
+	
+	/**
+	 * Returns one column from the ResultSet
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getRow(String sql, Object[] binder) {
+		return getRow(getRS(getPST(sql, binder)));
+	}
+	
+	/**
+	 * Returns one column from the ResultSet
+	 * @param sql (String)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getRow(String sql) {
+		return getRow(getRS(getPST(sql)));
 	}
 	
 	/**
@@ -161,7 +208,7 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" } )
-	public ArrayList getColumn(ResultSet rs, String columnName) {
+	private ArrayList getColumn(ResultSet rs, String columnName) {
 		if(rs == null) {
 			System.err.println("Error @getColumn: No result set.");
 			return null;
@@ -169,13 +216,84 @@ abstract class SQLKit {
 		try {
 			columnData = new ArrayList<>();
 			while(rs.next()) {
-				columnData.add(rs.getObject(columnName));
+				if(columnName == null) {
+					columnData.add(rs.getObject(1));
+				}else {
+					columnData.add(rs.getObject(columnName));
+				}
 			}
 			return columnData;
 		} catch (Exception e) {
 			System.err.println("Error @getColumn: "+e.getMessage());
 			return null;
 		}
+	}
+	
+	/**
+	 * Returns one column from the ResultSet
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 * @param columnName (String)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumn(String sql, ArrayList binder, String columnName) {
+		return getColumn(getRS(getPST(sql, binder)), columnName);
+	}
+	
+	/**
+	 * Returns one column from the ResultSet
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 * @param columnName (String)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumn(String sql, Object[] binder, String columnName) {
+		return getColumn(getRS(getPST(sql, binder)), columnName);
+	}
+	
+	/**
+	 * Returns one column from the ResultSet
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumn(String sql, ArrayList binder) {
+		return getColumn(getRS(getPST(sql, binder)), null);
+	}
+
+	/**
+	 * Returns one column from the ResultSet
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumn(String sql, Object[] binder) {
+		return getColumn(getRS(getPST(sql, binder)), null);
+	}
+
+	/**
+	 * Returns one column from the ResultSet
+	 * @param sql (String)
+	 * @param columnName (String)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumn(String sql, String columnName) {
+		return getColumn(getRS(getPST(sql)), columnName);
+	}
+	
+	/**
+	 * Returns one column from the ResultSet
+	 * @param sql (String)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumn(String sql) {
+		return getColumn(getRS(getPST(sql)), null);
 	}
 
 	/**
@@ -184,7 +302,11 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public ArrayList getColumnNames(ResultSet rs){
+	private ArrayList getColumnNames(ResultSet rs){
+		if(rs == null) {
+			System.err.println("Error @getColumnNames: No result set.");
+			return null;
+		}
 		try {
 			tblHeader = new ArrayList<>();
 			rsmd = rs.getMetaData();
@@ -198,6 +320,38 @@ abstract class SQLKit {
 			return null;
 		}
 	}
+	
+	/**
+	 * Returns column names from the ResultSet
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumnNames(String sql, ArrayList binder) {
+		return getColumnNames(getRS(getPST(sql, binder)));
+	}
+	
+	/**
+	 * Returns column names from the ResultSet
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumnNames(String sql, Object[] binder) {
+		return getColumnNames(getRS(getPST(sql, binder)));
+	}
+	
+	/**
+	 * Returns column names from the ResultSet
+	 * @param sql (String)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumnNames(String sql) {
+		return getColumnNames(getRS(getPST(sql)));
+	}
 
 	/**
 	 * Returns column labels from the ResultSet
@@ -205,7 +359,11 @@ abstract class SQLKit {
 	 * @return ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public ArrayList getColumnLabels(ResultSet rs){
+	private ArrayList getColumnLabels(ResultSet rs){
+		if(rs == null) {
+			System.err.println("Error @getColumnLabels: No result set.");
+			return null;
+		}
 		try {
 			tblHeader = new ArrayList<>();
 			rsmd = rs.getMetaData();
@@ -219,6 +377,38 @@ abstract class SQLKit {
 			return null;
 		}
 	}
+	
+	/**
+	 * Returns column labels from the ResultSet
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumnLabels(String sql, ArrayList binder) {
+		return getColumnLabels(getRS(getPST(sql, binder)));
+	}
+	
+	/**
+	 * Returns column labels from the ResultSet
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumnLabels(String sql, Object[] binder) {
+		return getColumnLabels(getRS(getPST(sql, binder)));
+	}
+	
+	/**
+	 * Returns column labels from the ResultSet
+	 * @param sql (String)
+	 * @return ArrayList (Object-type)
+	 */
+	@SuppressWarnings("rawtypes")
+	public ArrayList getColumnLabels(String sql) {
+		return getColumnLabels(getRS(getPST(sql)));
+	}
 
 	/**
 	 * Returns all rows from the ResultSet
@@ -226,7 +416,11 @@ abstract class SQLKit {
 	 * @return 2D ArrayList (Object-type)
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public ArrayList<ArrayList> getRows(ResultSet rs){
+	private ArrayList<ArrayList> getRows(ResultSet rs){
+		if(rs == null) {
+			System.err.println("Error @getRows: No result set.");
+			return null;
+		}
 		try {
 			tblRows = new ArrayList<>();
 			int columns = rs.getMetaData().getColumnCount();
@@ -244,39 +438,216 @@ abstract class SQLKit {
 			return null;
 		}
 	}
+	
+	/**
+	 * Returns all rows from the ResultSet
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 * @return 2D ArrayList (Object-type)
+	 */
+	@SuppressWarnings({ "rawtypes" })
+	public ArrayList<ArrayList> getRows(String sql, ArrayList binder){
+		return getRows(getRS(getPST(sql, binder)));
+	}
+	
+	/**
+	 * Returns all rows from the ResultSet
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 * @return 2D ArrayList (Object-type)
+	 */
+	@SuppressWarnings({ "rawtypes" })
+	public ArrayList<ArrayList> getRows(String sql, Object[] binder){
+		return getRows(getRS(getPST(sql, binder)));
+	}
+	
+	/**
+	 * Returns all rows from the ResultSet
+	 * @param sql (String)
+	 * @return 2D ArrayList (Object-type)
+	 */
+	@SuppressWarnings({ "rawtypes" })
+	public ArrayList<ArrayList> getRows(String sql){
+		return getRows(getRS(getPST(sql)));
+	}
 
+	/**************************************************/
+	/***********GETTER FOR SWING COMPONENTS***********/
+	/**************************************************/
+	
 	/**
 	 * Returns JTable model from a ResultSet
 	 * @param rs (ResultSet)
 	 * @return DefaultTableModel for JTable
 	 */
-//	public DefaultTableModel getTableModel(ResultSet rs) {
-//		//Get Column Names
-//		tblHeader = getColumnLabels(rs);
-//
-//		//Get Rows from Result Set
-//		tblRows = getRows(rs);
-//
-//		return new DefaultTableModel(getArrayListToArray(tblRows), );
-//	}
+	private DefaultTableModel getTableModel(ResultSet rs) {
+		if(rs == null) {
+			System.err.println("Error @getTableModel: No result set.");
+			return null;
+		}
+		//Get Column Names
+		tblHeader = getColumnLabels(rs);
+
+		//Get Rows from Result Set
+		tblRows = getRows(rs);
+
+		return new DefaultTableModel((Object[][]) arrayListToArray(tblRows), (Object[]) arrayListToArray(tblHeader));
+	}
+	
+	/**
+	 * Returns JTable model from a ResultSet
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 * @return DefaultTableModel for JTable
+	 */
+	@SuppressWarnings("rawtypes")
+	public DefaultTableModel getTableModel(String sql, ArrayList binder) {
+		return getTableModel(getRS(getPST(sql, binder)));
+	}
+	
+	/**
+	 * Returns JTable model from a ResultSet
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 * @return DefaultTableModel for JTable
+	 */
+	public DefaultTableModel getTableModel(String sql, Object[] binder) {
+		return getTableModel(getRS(getPST(sql, binder)));
+	}
+	
+	/**
+	 * Returns JTable model from a ResultSet
+	 * @param sql (String)
+	 * @return DefaultTableModel for JTable
+	 */
+	public DefaultTableModel getTableModel(String sql) {
+		return getTableModel(getRS(getPST(sql)));
+	}
 
 	/**
 	 * Returns JComboBox model from an Object-type ArrayList
-	 * @param v (Object-type ArrayList)
-	 * @return
+	 * Best to combine with getRow, getColumn, getColumnNames and getColumnLabels
+	 * @param arr (Object-type ArrayList)
+	 * @return DefaultComboBoxModel for JComboBox
 	 */
-//	@SuppressWarnings({ "rawtypes", "unchecked" })
-//	public DefaultComboBoxModel getComboBoxModel(ArrayList v) {
-//		return new DefaultComboBoxModel<>(v);
-//	}
+	@SuppressWarnings({ "rawtypes"})
+	public DefaultComboBoxModel getComboBoxModel(ArrayList arr) {
+		return new DefaultComboBoxModel<>(arrayListToArray(arr));
+	}
 	
-//	public void setTableModel(JTable tbl, String sql) {
-//		tbl.setModel(getTableModel(getRS(getPST(sql))));
-//	}
+	/**
+	 * Returns JComboBox model from an Object-type ArrayList
+	 * Best to combine with getRow, getColumn, getColumnNames and getColumnLabels
+	 * @param arr (Object-type array)
+	 * @return DefaultComboBoxModel for JComboBox
+	 */
+	@SuppressWarnings({ "rawtypes"})
+	public DefaultComboBoxModel getComboBoxModel(Object[] arr) {
+		return new DefaultComboBoxModel<>(arr);
+	}
 	
-//	public void setComboBoxModel(JComboBox cmb, String col_name, String sql) {
-//		cmb.setModel(getComboBoxModel(getColumn(getRS(getPST(sql)), col_name)));
-//	}
+	
+	/**************************************************/
+	/***********SETTER FOR SWING COMPONENTS***********/
+	/**************************************************/
+	
+	/**
+	 * Sets the JTable Model
+	 * @param tbl (JTable)
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 */
+	@SuppressWarnings("rawtypes")
+	public void setTableModel(JTable tbl, String sql, ArrayList binder) {
+		tbl.setModel(getTableModel(getRS(getPST(sql, binder))));
+	}
+	
+	/**
+	 * Sets the JTable Model
+	 * @param tbl (JTable)
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 */
+	public void setTableModel(JTable tbl, String sql, Object[] binder) {
+		tbl.setModel(getTableModel(getRS(getPST(sql, binder))));
+	}
+	
+	/**
+	 * Sets the JTable Model
+	 * @param tbl (JTable)
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 */
+	public void setTableModel(JTable tbl, String sql) {
+		tbl.setModel(getTableModel(getRS(getPST(sql))));
+	}
+	
+	/**
+	 * Sets the JComboBox Model
+	 * @param cmb (JComboBox)
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 * @param columnName (String)
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void setComboBoxModel(JComboBox cmb, String sql, ArrayList binder, String columnName) {
+		cmb.setModel(getComboBoxModel(getColumn(sql, binder, columnName)));
+	}
+	
+	/**
+	 * Sets the JComboBox Model
+	 * @param cmb (JComboBox)
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 * @param columnName (String)
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void setComboBoxModel(JComboBox cmb, String sql, Object[] binder, String columnName) {
+		cmb.setModel(getComboBoxModel(getColumn(sql, binder, columnName)));
+	}
+	
+	/**
+	 * Sets the JComboBox Model
+	 * @param cmb (JComboBox)
+	 * @param sql (String)
+	 * @param binder (ArrayList)
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void setComboBoxModel(JComboBox cmb, String sql, ArrayList binder) {
+		cmb.setModel(getComboBoxModel(getColumn(sql, binder)));
+	}
+	
+	/**
+	 * Sets the JComboBox Model
+	 * @param cmb (JComboBox)
+	 * @param sql (String)
+	 * @param binder (Object-type array)
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void setComboBoxModel(JComboBox cmb, String sql, Object[] binder) {
+		cmb.setModel(getComboBoxModel(getColumn(sql, binder)));
+	}
+	
+	/**
+	 * Sets the JComboBox Model
+	 * @param cmb (JComboBox)
+	 * @param sql (String)
+	 * @param columnName (String)
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void setComboBoxModel(JComboBox cmb, String sql, String columnName) {
+		cmb.setModel(getComboBoxModel(getColumn(sql, columnName)));
+	}
+	
+	/**
+	 * Sets the JComboBox Model
+	 * @param cmb (JComboBox)
+	 * @param sql (String)
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void setComboBoxModel(JComboBox cmb, String sql) {
+		cmb.setModel(getComboBoxModel(getColumn(sql)));
+	}
 	
 	/*	OPEN and CLOSE DATABASE CONNECTIONS
 	 * 	Note: Before opening new connections,
@@ -284,15 +655,19 @@ abstract class SQLKit {
 	 * 	This is to prevent the database from being locked.
 	 */
 	
-	abstract boolean openDatabase();
-	
-	protected void closeDatabase() {
+	abstract protected boolean connectionOpen();
+	abstract protected void connectionTest();
+	protected boolean connectionClose() {
 		try {
 			if (con != null) {
 				con.close();
+				return true;
+			}else {
+				return false;
 			}
 		} catch (SQLException e) {
-			System.err.println("Error @closeDatabase: "+e.getMessage());
+			System.err.println("Error @connectionClose: "+e.getMessage());
+			return false;
 		}
 	}
 	
@@ -300,30 +675,29 @@ abstract class SQLKit {
 	 * STATIC METHODS (Converters, etc.)
 	 */
 	
-//	@SuppressWarnings({ "rawtypes", "unchecked" })
-//	public static Object[] getArrayListToArray(ArrayList input) {
-//		if(input == null) {
-//			return null;
-//		}
-//		//Check if 1D or 2D
-//		else return input.toArray(new Object[input.size()]);
-//		Object output[][] = new Object[input.size()][];
-//		for (int i = 0; i < input.size(); i++) {
-//			output[i] = input.get(i).toArray(new Object[input.get(i).size()]);
-//		}
-//		return output;
-//	}
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static Object[] arrayListToArray(ArrayList input) {
+		if(input == null || input.isEmpty()) {
+			return null;
+		}
+		if(input.get(0) instanceof ArrayList) { //check if multi-dimensional
+			Object output[][] = new Object[input.size()][];
+			for (int i = 0; i < input.size(); i++) {
+				output[i] = ((ArrayList) input.get(i)).toArray(new Object[((ArrayList) input.get(i)).size()]);
+			}
+			return output;
+		}else { //if not multi-dimensional
+			return input.toArray(new Object[input.size()]);
+		}
+	}
 	
-//	@SuppressWarnings("rawtypes")
-//	public static void arrayListToArray(ArrayList input, Object[] output) {
-//		output = arrayListToArray(input);
-//	}
+	@SuppressWarnings("rawtypes")
+	public static void arrayListToArray(ArrayList input, Object[] output) {
+		output = arrayListToArray(input);
+	}
 	
-//	@SuppressWarnings({ "unchecked", "rawtypes" })
-//	public static void arrayListToArray(ArrayList<ArrayList> input, Object[][] output) {
-//		output = new Object[input.size()][];
-//		for (int i = 0; i < input.size(); i++) {
-//			output[i] = input.get(i).toArray(new Object[input.get(i).size()]);
-//		}
-//	}
+	@SuppressWarnings({ "rawtypes" })
+	public static void arrayListToArray(ArrayList<ArrayList> input, Object[][] output) {
+		output = (Object[][]) arrayListToArray(input);
+	}
 }

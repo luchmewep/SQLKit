@@ -8,28 +8,39 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
-/**
- * @author James Carlo Luchavez
- * <p>Hello, Programmer!<br>
- * To use this SQLite Toolkit for CRUD operations,<br>
- * just UNCOMMENT the CRUD operation you want to try out.</p>
+/*
+ * Note: The MySQL database should already be turned on.
+ * Also, the JDBC (Java Database Connector) JAR file I used is Version 8.0.13.
  */
 
-public class sqlitecruddemo {
-	static SQLiteKit db;
+public class mysqlcruddemo {
+	static MySQLKit db;
 	static PreparedStatement pst;
 	static ResultSet rs;
 	static String sql;
-	static ArrayList<Object> binder, row, column;
-	@SuppressWarnings("rawtypes")
+	static ArrayList binder, row, column;
 	static ArrayList<ArrayList> result2d;
 	static boolean success;
 	static DefaultTableModel model;
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void main(String[] args) throws SQLException {
 		
-		db = new SQLiteKit("C:\\Users\\jsluc\\Desktop\\sqlitejavatoolkit-master\\students.db");
-		db.connectionTest(); //TEST FIRST THE CONNECTION BEFORE ANYTHING ELSE!
+		db = new MySQLKit("accounts"); //Instantiates connection to MySQL
+		db.connectionTest(); //TEST FIRST THE CONNECTION BEFORE ANYTHING ELSE! 
+		/*
+		 * Below are CRUD (Create-Read-Update-Delete) examples.
+		 * Since "insert into", "update" and "delete from" commands do not return a table/result set,
+		 * the Database.java method that shall be used is the "executePST(PreparedStatement pst)".
+		 * The said method will return a boolean value (true or false).
+		 * As for the "select" command, "getRS(PreparedStatement pst)" shall be used.
+		 * This method, on the other hand, returns a result set
+		 * which can be processed by other Database.java Methods.
+		 * Please see the Database.java to see all available methods.
+		 */
+		
+		
+		
 		/*
 		 * (a) Simple INSERT algorithm
 		 */
@@ -150,18 +161,15 @@ public class sqlitecruddemo {
 		/*
 		 * Get Table Model for JTable from Result Set
 		 */
-		System.out.println("Result of insert: "+db.runQuery("insert into tbl_student values (null, 'Renz', 'Arriola', 30, 'male', 3, 2, 1)"));
-//		System.out.println("Result of update: "+db.runQuery("update tbl_student set stud_fname = 'Renzuah' where stud_id = 5"));
-//		System.out.println("Result of delete: "+db.runQuery("delete from tbl_student where stud_id = 5"));
 		JTable t = new JTable();
 		JScrollPane s = new JScrollPane(t);
-		db.setTableModel(t, "select * from tbl_student");
+		db.setTableModel(t, "select * from view_users");
 		s.setBounds(0, 0, 500, 500);
-		System.out.println("After tbl");
+		
 		JComboBox<String> cmb = new JComboBox<>();
-		db.setComboBoxModel(cmb, "select stud_age from tbl_student");
+		db.setComboBoxModel(cmb, "show tables");
 		cmb.setBounds(0,500,500,50);
-		System.out.println("After cmb");
+		
 		JFrame f = new JFrame();
 		f.setLayout(null);
 		f.add(s);

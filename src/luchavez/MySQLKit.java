@@ -1,6 +1,7 @@
 package luchavez;
 
 import java.sql.DriverManager;
+import java.util.ArrayList;
 
 public class MySQLKit extends SQLKit {
 
@@ -59,14 +60,32 @@ public class MySQLKit extends SQLKit {
 	 */
 	
 	@Override
-	boolean openDatabase() {
-		closeDatabase();
+	protected boolean connectionOpen() {
+		connectionClose();
 		try {
 			con = DriverManager.getConnection("jdbc:mysql://"+db_host+":3306/"+db_name+"?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&allowMultiQueries=true", db_username, db_password);
 			return true;
 		} catch (Exception e) {
-			System.err.println("Error @openDatabase: "+e.getMessage());
+			System.err.println("Error @connectionOpen: "+e.getMessage());
 			return false;
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	protected void connectionTest() {
+		if(connectionOpen()) {
+			System.out.println("Connected successfully.");
+			ArrayList tables = getColumn("show tables");
+			if(tables != null) {
+				String message = "The database contains "+tables.size()+" tables.";
+				if(tables.size() != 0) {
+					for (Object object : tables) {
+						message += "\n> "+object;
+					}
+				}
+				System.out.println(message);
+			}
 		}
 	}
 
