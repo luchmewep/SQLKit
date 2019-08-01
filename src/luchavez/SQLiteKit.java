@@ -15,6 +15,9 @@ public class SQLiteKit extends SQLKit {
 	 */
 	public SQLiteKit(String db_url) {
 		this.db_url = db_url;
+		if(connectionOpen()) {
+			connectionClose();
+		}
 	}
 	
 	/*	OPEN and CLOSE DATABASE CONNECTIONS
@@ -37,7 +40,7 @@ public class SQLiteKit extends SQLKit {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	void connectionTest() {
+	public void connectionTest() {
 		if(connectionOpen()) {
 			System.out.println("Connected successfully.");
 			ArrayList tables = getOneColumn("SELECT name FROM sqlite_master WHERE type='table'");
