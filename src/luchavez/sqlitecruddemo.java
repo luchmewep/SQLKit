@@ -26,11 +26,11 @@ public class sqlitecruddemo {
 		/*
 		 * (a) Simple INSERT algorithm
 		 */
-//		if(db.runQuery("insert into stud_info values (null, 'Juan', 'Tamad')")) {
-//			System.out.println("Success simple insert!");
-//		}else {
-//			System.out.println("Failed!");
-//		}
+		if(db.runQuery("insert into tbl_student values (null, 'Juan', 'Tamad', 22, 'male', 1, 2, 1)")) {
+			System.out.println("Success simple insert!");
+		}else {
+			System.out.println("Failed!");
+		}
 		
 		/*
 		 * (a) INSERT algorithm with "binder" (Object-type ArrayList)
