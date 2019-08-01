@@ -656,7 +656,7 @@ abstract class SQLKit {
 	 */
 	
 	abstract protected boolean connectionOpen();
-	abstract void connectionTest();
+	abstract public void connectionTest();
 	protected boolean connectionClose() {
 		try {
 			if (con != null) {

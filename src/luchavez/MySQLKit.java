@@ -73,7 +73,7 @@ public class MySQLKit extends SQLKit {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	void connectionTest() {
+	public void connectionTest() {
 		if(connectionOpen()) {
 			System.out.println("Connected successfully.");
 			ArrayList tables = getOneColumn("show tables");
