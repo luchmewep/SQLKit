@@ -40,7 +40,7 @@ public class SQLiteKit extends SQLKit {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void connectionTest() {
+	void connectionTest() {
 		if(connectionOpen()) {
 			System.out.println("Connected successfully.");
 			ArrayList tables = getOneColumn("SELECT name FROM sqlite_master WHERE type='table'");
