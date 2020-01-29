@@ -18,7 +18,6 @@ public class mysqlcruddemo {
 	
 	@SuppressWarnings({ "rawtypes" })
 	public static void main(String[] args) throws SQLException {
-		sysout
 		db = new MySQLKit("accounts"); //Instantiates connection to MySQL
 		db.connectionTest(); //TEST FIRST THE CONNECTION BEFORE ANYTHING ELSE! 
 			
